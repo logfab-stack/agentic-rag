@@ -1,0 +1,100 @@
+# Agentic RAG System - Database Migrations
+
+This directory contains Alembic migrations for the Agentic RAG System database schema.
+
+## Migration Overview
+
+### Initial Setup (Migration 001)
+Creates the base schema including:
+- `collections` - Document collections/folders
+- `documents` - Document metadata
+- `document_rows` - Rows for structured data (CSV, Excel, JSON)
+- `document_embeddings` - Vector embeddings for semantic search
+- `conversations` - Chat conversations
+- `messages` - Chat messages
+- `settings` - Application settings
+
+### Schema Evolution (Migrations 002-022)
+Individual migrations that added features incrementally:
+- Chunk feedback, audit logging, soft delete, backup tables, etc.
+
+### Consolidated Schema Migration (Migration 023)
+**Feature #273** - Consolidates all schema changes from features #256-261 into a
+single, properly-ordered migration that can be applied to existing databases.
+
+This migration is **IDEMPOTENT** - it will skip changes that already exist.
+
+#### Changes Included:
+| Feature | Change | Column/Constraint |
+|---------|--------|-------------------|
+| #257 | Add column | `file_path` (VARCHAR 1000) |
+| #258 | Add column | `status` (VARCHAR 20) |
+| #259 | Add column | `embedding_model` (VARCHAR 100) |
+| #260 | Add column | `chunk_count` (INTEGER) |
+| #256 | Add FK constraint | `fk_embeddings_document` |
+| #261 | Add CHECK constraint | `chk_document_status` |
+
+#### Dependency Order:
+The migration applies changes in this order:
+1. **Columns** - No dependencies between them
+2. **Indexes** - For efficient queries
+3. **Data backfill** - Populate columns from existing data
+4. **FK constraints** - Requires columns to exist
+5. **CHECK constraints** - Requires status column
+6. **Triggers** - For automatic chunk_count updates
+
+## Running Migrations
+
+### Apply All Migrations
+```bash
+cd backend
+source venv/bin/activate
+alembic upgrade head
+```
+
+### Check Current Version
+```bash
+alembic current
+```
+
+### View Migration History
+```bash
+alembic history --verbose
+```
+
+### Downgrade (Reverse Migration)
+```bash
+# Go back one version
+alembic downgrade -1
+
+# Go to specific version
+alembic downgrade 022
+```
+
+## Fresh Database Setup
+
+For a fresh database, migrations will be applied in order:
+1. 001_initial_migration.py (base schema)
+2. 002-022 (individual feature migrations)
+3. 023_consolidated_schema_migration.py (ensures all schema changes are applied)
+
+The consolidated migration (023) is safe to run on:
+- Fresh databases (applies all changes)
+- Existing databases (skips existing changes)
+
+## Valid Document Status Values
+
+The `documents.status` column is constrained to these values:
+- `uploading` - File is being uploaded
+- `processing` - Document is being processed/embedded
+- `ready` - Document is fully processed and searchable
+- `embedding_failed` - Embedding generation failed
+- `file_missing` - File has been deleted or is missing
+
+## Trigger Functions
+
+### update_document_chunk_count()
+Automatically updates `documents.chunk_count` when embeddings are:
+- Inserted (increments count)
+- Deleted (decrements count)
+- Status changed (for soft delete/restore)

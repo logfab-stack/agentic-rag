@@ -1,0 +1,138 @@
+# Dependencies
+node_modules/
+backend/venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Environment
+.env
+.env.local
+.env.*.local
+backend/.env
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build outputs
+dist/
+build/
+*.egg-info/
+.eggs/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Testing
+.coverage
+htmlcov/
+.pytest_cache/
+.tox/
+
+# Uploads and generated files
+uploads/
+backend/uploads/
+
+# Test artifacts
+backend/test_uploads/
+backend/test_*.db
+backend/test_*.db-wal
+backend/test_*.db-shm
+backend/test_app.db
+test_uploads/
+test_*.tmp
+test_*.temp
+
+# Settings file (contains API keys)
+backend/settings.json
+
+# Database files (keep schema, not data)
+*.db-shm
+*.db-wal
+
+# Cache
+.cache/
+*.cache
+
+# Temporary files
+*.tmp
+*.temp
+
+# Lock files (keep for reproducibility)
+# package-lock.json
+# poetry.lock
+
+# IDE specific
+.project
+.classpath
+.settings/
+
+# TypeScript
+*.tsbuildinfo
+
+# Vite
+*.local
+
+# Autocoder specific (keep structure, not data)
+.autocoder/
+.agent.lock
+assistant.db
+.claude_settings.json
+.claude_assistant_settings.json
+.claude_settings.expand.*.json
+
+# Claude Code progress files
+claude-progress.txt
+**/claude-progress.txt
+
+# Feature backlog databases
+features.db
+**/features.db
+
+# Claude Code internal
+.claude/
+
+# Agent session reports (temporary)
+AGENT*_*.txt
+
+# Playwright MCP screenshots (generated)
+.playwright-mcp/
+
+# Binary indexes (regenerated at runtime)
+backend/bm25_index.pkl
+
+# Log archives
+backend/logs/*.log.*
+
+# Backup data (contains personal paths and document data)
+backend/automatic_backups/
+backend/backups/
+
+# SQLite databases (legacy, now using PostgreSQL)
+backend/data.db
+backend/embeddings.db
+
+# Sample documents (user data, not for public repo)
+sample_docs/
+
+# Test artifacts and feature completion reports
+backend/test_*.py
+backend/test_*.txt
+backend/FEATURE_*.md
+backend/FEATURE_*.txt
+frontend/test_*

@@ -1,0 +1,147 @@
+# =============================================================================
+# Agentic RAG System - Production Docker Compose with SSL/TLS
+# =============================================================================
+# This file extends docker-compose.prod.yml to add HTTPS support.
+#
+# Feature #326: HTTPS and security headers
+#
+# Prerequisites:
+#   1. SSL certificates (see docs/ssl-setup.md)
+#   2. docker-compose.prod.yml (base configuration)
+#
+# Usage:
+#   # Using existing certificates
+#   docker compose -f docker-compose.prod.yml -f docker-compose.ssl.yml up -d
+#
+#   # With Let's Encrypt via Traefik (automatic SSL)
+#   docker compose -f docker-compose.prod.yml -f docker-compose.ssl.yml \
+#     --profile traefik up -d
+#
+#   # With Ollama and SSL
+#   docker compose -f docker-compose.prod.yml -f docker-compose.ssl.yml \
+#     --profile ollama up -d
+# =============================================================================
+
+name: agentic-rag-ssl
+
+services:
+  # ===========================================================================
+  # Frontend with SSL-enabled Nginx
+  # ===========================================================================
+  frontend:
+    # Expose both HTTP (redirect) and HTTPS
+    ports:
+      - "${FRONTEND_PORT:-80}:80"
+      - "${FRONTEND_HTTPS_PORT:-443}:443"
+    volumes:
+      # Mount SSL certificates (required)
+      - ${SSL_CERT_PATH:-./certs/fullchain.pem}:/etc/nginx/ssl/fullchain.pem:ro
+      - ${SSL_KEY_PATH:-./certs/privkey.pem}:/etc/nginx/ssl/privkey.pem:ro
+      # Use SSL-enabled nginx config
+      - ./frontend/nginx-ssl.conf:/etc/nginx/nginx.conf:ro
+    environment:
+      - SSL_ENABLED=true
+
+  # ===========================================================================
+  # Backend with SSL configuration
+  # ===========================================================================
+  backend:
+    environment:
+      # Enable SSL mode for security headers
+      SSL_ENABLED: "true"
+      FORCE_HTTPS: "true"
+      # CORS origins should include HTTPS
+      CORS_ORIGINS: ${CORS_ORIGINS:-https://localhost,https://localhost:443}
+      # HSTS settings
+      HSTS_MAX_AGE: "31536000"
+      HSTS_INCLUDE_SUBDOMAINS: "true"
+      HSTS_PRELOAD: "false"
+
+  # ===========================================================================
+  # Traefik Reverse Proxy (Optional - for automatic Let's Encrypt SSL)
+  # ===========================================================================
+  traefik:
+    image: traefik:v2.10
+    container_name: agentic-rag-traefik
+    restart: unless-stopped
+    profiles:
+      - traefik
+    command:
+      # API and dashboard
+      - "--api.dashboard=true"
+      # Docker provider
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--providers.docker.network=agentic-rag-network"
+      # Entrypoints
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      # HTTP to HTTPS redirect
+      - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
+      # Let's Encrypt certificate resolver
+      - "--certificatesresolvers.letsencrypt.acme.tlschallenge=true"
+      - "--certificatesresolvers.letsencrypt.acme.email=${ACME_EMAIL:-admin@example.com}"
+      - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
+      # Uncomment for Let's Encrypt staging (testing)
+      # - "--certificatesresolvers.letsencrypt.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory"
+    ports:
+      - "80:80"
+      - "443:443"
+      # Traefik dashboard (optional, disable in production)
+      - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - traefik_certs:/letsencrypt
+    networks:
+      - rag-network
+    labels:
+      # Enable Traefik for this container (for dashboard)
+      - "traefik.enable=true"
+      # Dashboard routing (optional)
+      - "traefik.http.routers.traefik.rule=Host(`traefik.${DOMAIN:-localhost}`)"
+      - "traefik.http.routers.traefik.service=api@internal"
+      - "traefik.http.routers.traefik.tls.certresolver=letsencrypt"
+
+  # ===========================================================================
+  # Frontend with Traefik labels (when using Traefik profile)
+  # ===========================================================================
+  frontend-traefik:
+    extends:
+      service: frontend
+      file: docker-compose.prod.yml
+    container_name: agentic-rag-frontend-traefik
+    profiles:
+      - traefik
+    ports: []  # Traefik handles ports
+    volumes:
+      # Use standard nginx config (Traefik handles SSL)
+      - ./frontend/nginx.conf:/etc/nginx/nginx.conf:ro
+    labels:
+      - "traefik.enable=true"
+      # HTTP router (will be redirected to HTTPS by Traefik)
+      - "traefik.http.routers.frontend.rule=Host(`${DOMAIN:-localhost}`)"
+      - "traefik.http.routers.frontend.entrypoints=web"
+      # HTTPS router
+      - "traefik.http.routers.frontend-secure.rule=Host(`${DOMAIN:-localhost}`)"
+      - "traefik.http.routers.frontend-secure.entrypoints=websecure"
+      - "traefik.http.routers.frontend-secure.tls.certresolver=letsencrypt"
+      # Service
+      - "traefik.http.services.frontend.loadbalancer.server.port=80"
+    networks:
+      - rag-network
+
+# =============================================================================
+# Additional Volumes for Traefik
+# =============================================================================
+volumes:
+  traefik_certs:
+    name: agentic-rag-traefik-certs
+
+# =============================================================================
+# Networks (inherit from base)
+# =============================================================================
+networks:
+  rag-network:
+    external: true
+    name: agentic-rag-network

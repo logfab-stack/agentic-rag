@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Agentic RAG System - An intelligent document assistant" />
+    <title>Agentic RAG System</title>
+    <!-- Inter font - loaded asynchronously to avoid render blocking -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"></noscript>
+    <!-- Theme initialization script - runs before any other JavaScript to prevent FOUC -->
+    <script>
+      (function() {
+        try {
+          var settings = localStorage.getItem('rag-settings');
+          var theme = 'system';
+          if (settings) {
+            var parsed = JSON.parse(settings);
+            if (parsed.theme && ['light', 'dark', 'system'].includes(parsed.theme)) {
+              theme = parsed.theme;
+            }
+          }
+          var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          var shouldBeDark = theme === 'dark' || (theme === 'system' && prefersDark);
+          if (shouldBeDark) {
+            document.documentElement.classList.add('dark');
+          }
+        } catch (e) {
+          // Silently fail - theme will default to light
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

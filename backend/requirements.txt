@@ -1,0 +1,72 @@
+# Agentic RAG System - Backend Dependencies
+
+# Web Framework
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+python-multipart>=0.0.6
+
+# Database
+sqlalchemy>=2.0.0
+asyncpg>=0.29.0
+psycopg2-binary>=2.9.9
+pgvector>=0.2.4
+alembic>=1.12.0
+greenlet>=3.0.0
+
+# LangChain & AI
+langchain>=0.1.0
+langchain-openai>=0.0.5
+langchain-community>=0.0.20
+langgraph>=0.0.20
+openai>=1.10.0
+
+# Document Processing
+pypdf>=3.17.0
+pdfplumber>=0.11.0
+pymupdf>=1.23.0
+python-docx>=1.1.0
+openpyxl>=3.1.2
+xlrd>=2.0.1
+pandas>=2.1.0
+python-magic>=0.4.27
+chardet>=5.2.0
+
+# Embeddings & Vector Search
+tiktoken>=0.5.0
+
+# Re-ranking
+cohere>=4.40
+
+# Hybrid Search (BM25 + Vector)
+rank-bm25>=0.2.2
+
+# Scheduling (Feature #221 - Automatic backups)
+apscheduler>=3.10.0
+
+# Utilities
+python-dotenv>=1.0.0
+pydantic>=2.5.0
+pydantic-settings>=2.1.0
+aiofiles>=23.2.1
+httpx>=0.25.0
+tenacity>=8.2.3
+langdetect>=1.0.9
+
+# System Monitoring (Feature #320)
+psutil>=5.9.0
+
+# Security
+cryptography>=41.0.0
+python-jose[cryptography]>=3.3.0
+
+# Rate Limiting (Feature #324)
+slowapi>=0.1.9
+
+# WhatsApp/Twilio Integration
+twilio>=9.0.0
+
+# Testing (optional, for development)
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
+pytest-cov>=4.1.0
+httpx>=0.25.0
