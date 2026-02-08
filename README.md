@@ -41,22 +41,22 @@ Upload your documents — PDFs, Word files, spreadsheets, CSVs — and have a na
 ### 💬 Chat Interface
 AI-powered conversational interface with source attribution and tool selection badges.
 
-![Chat Interface](docs/screenshots/chat.png)
+<img src="docs/screenshots/chat.png" alt="Chat Interface" width="100%">
 
 ### 📄 Document Management
 Upload, organize, and manage documents across multiple formats with chunk tracking.
 
-![Document Management](docs/screenshots/documents.png)
+<img src="docs/screenshots/documents.png" alt="Document Management" width="100%">
 
 ### ⚙️ Settings
 Configure API keys, select models, auto-detect Ollama — all from the UI.
 
-![Settings](docs/screenshots/settings.png)
+<img src="docs/screenshots/settings.png" alt="Settings" width="100%">
 
 ### 📊 Dashboard
 System analytics with real-time metrics, resource monitoring, and embedding coverage.
 
-![Dashboard](docs/screenshots/dashboard.png)
+<img src="docs/screenshots/dashboard.png" alt="Dashboard" width="100%">
 
 ---
 
