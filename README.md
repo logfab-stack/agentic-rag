@@ -8,6 +8,7 @@
 </p>
 
 <p align="center">
+  <a href="#screenshots">Screenshots</a> •
   <a href="#features">Features</a> •
   <a href="#quick-start">Quick Start</a> •
   <a href="#docker-deployment">Docker</a> •
@@ -32,6 +33,30 @@ Upload your documents — PDFs, Word files, spreadsheets, CSVs — and have a na
 - **📊 Structured + Unstructured** — Text documents are vectorized for semantic search; tabular data (CSV, Excel, JSON) is stored for SQL queries. The agent picks the right tool automatically
 - **💬 Multi-Channel** — Chat via the web UI, Telegram bot, or WhatsApp
 - **🏭 Production-Ready** — Automatic backups, health checks, audit logging, rate limiting, security headers, and async document processing
+
+---
+
+## Screenshots
+
+### 💬 Chat Interface
+AI-powered conversational interface with source attribution and tool selection badges.
+
+![Chat Interface](docs/screenshots/chat.png)
+
+### 📄 Document Management
+Upload, organize, and manage documents across multiple formats with chunk tracking.
+
+![Document Management](docs/screenshots/documents.png)
+
+### ⚙️ Settings
+Configure API keys, select models, auto-detect Ollama — all from the UI.
+
+![Settings](docs/screenshots/settings.png)
+
+### 📊 Dashboard
+System analytics with real-time metrics, resource monitoring, and embedding coverage.
+
+![Dashboard](docs/screenshots/dashboard.png)
 
 ---
 
