@@ -148,6 +148,14 @@ class ConsoleLogFormatter(logging.Formatter):
 
     def __init__(self, use_colors: bool = True):
         super().__init__()
+        # Enable ANSI color support on Windows 10+
+        if use_colors and sys.platform == "win32":
+            try:
+                import ctypes
+                kernel32 = ctypes.windll.kernel32
+                kernel32.SetConsoleMode(kernel32.GetStdHandle(-11), 7)
+            except Exception:
+                use_colors = False
         self.use_colors = use_colors
 
     def format(self, record: logging.LogRecord) -> str:

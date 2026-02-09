@@ -376,6 +376,39 @@ class BackupScheduler:
         finally:
             self._backup_in_progress = False
 
+    @staticmethod
+    def _find_pg_dump() -> Optional[str]:
+        """
+        Find the pg_dump executable across platforms.
+
+        On Windows, pg_dump may not be in PATH. This checks common
+        installation locations.
+
+        Returns:
+            Path to pg_dump executable, or None if not found
+        """
+        import shutil as _shutil
+
+        # First, try the standard PATH lookup
+        pg_dump_path = _shutil.which("pg_dump")
+        if pg_dump_path:
+            return pg_dump_path
+
+        # On Windows, check common PostgreSQL installation directories
+        if sys.platform == "win32":
+            import glob
+            common_paths = [
+                r"C:\Program Files\PostgreSQL\*\bin\pg_dump.exe",
+                r"C:\Program Files (x86)\PostgreSQL\*\bin\pg_dump.exe",
+                os.path.expandvars(r"%ProgramFiles%\PostgreSQL\*\bin\pg_dump.exe"),
+            ]
+            for pattern in common_paths:
+                matches = sorted(glob.glob(pattern), reverse=True)
+                if matches:
+                    return matches[0]  # Return the latest version
+
+        return None
+
     def _backup_database(self, backup_path: Path) -> Dict[str, Any]:
         """
         Backup database using pg_dump.
@@ -389,6 +422,12 @@ class BackupScheduler:
             # Parse database URL
             db_config = _parse_database_url(DATABASE_URL)
 
+            # Find pg_dump executable (cross-platform)
+            pg_dump_cmd = self._find_pg_dump()
+            if not pg_dump_cmd:
+                logger.warning("pg_dump not found in PATH or common locations, using application-level backup")
+                return self._backup_database_app_level(backup_path)
+
             # Set up environment for pg_dump (password via PGPASSWORD)
             env = os.environ.copy()
             if db_config["password"]:
@@ -396,7 +435,7 @@ class BackupScheduler:
 
             # Run pg_dump
             cmd = [
-                "pg_dump",
+                pg_dump_cmd,
                 "-h", db_config["host"],
                 "-p", db_config["port"],
                 "-U", db_config["user"],
@@ -406,15 +445,20 @@ class BackupScheduler:
                 "--verbose",
             ]
 
-            logger.info(f"Running pg_dump: {' '.join(cmd[:4])}...")
+            logger.info(f"Running pg_dump: {cmd[0]}...")
 
-            result = subprocess.run(
-                cmd,
-                env=env,
-                capture_output=True,
-                text=True,
-                timeout=600  # 10 minute timeout
-            )
+            # On Windows, subprocess needs shell=False (default) but creationflags
+            # to avoid spawning a visible console window
+            kwargs: Dict[str, Any] = {
+                "env": env,
+                "capture_output": True,
+                "text": True,
+                "timeout": 600,  # 10 minute timeout
+            }
+            if sys.platform == "win32":
+                kwargs["creationflags"] = subprocess.CREATE_NO_WINDOW
+
+            result = subprocess.run(cmd, **kwargs)
 
             if result.returncode != 0:
                 raise RuntimeError(f"pg_dump failed: {result.stderr}")

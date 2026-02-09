@@ -542,7 +542,8 @@ async def health_check(request: Request):
         import os
         upload_path = os.path.join(os.path.dirname(__file__), "uploads")
         if not os.path.exists(upload_path):
-            upload_path = "/"
+            # Use the drive root on Windows (e.g. C:\), or / on Unix
+            upload_path = os.path.splitdrive(os.path.abspath(__file__))[0] + os.sep if os.name == "nt" else "/"
 
         disk_usage = psutil.disk_usage(upload_path)
         health_status["metrics"]["disk"] = {
